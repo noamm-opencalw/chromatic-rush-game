@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>CHROMATIC RUSH - רוכב BMX ארקייד</title>
+    <meta name="description" content="רוכב BMX צעיר נלחם נגד תאגיד אפור - משחק ארקייד מלא אדרנלין">
+    <meta name="theme-color" content="#ff6b35">
+    
+    <!-- Preload Critical Resources -->
+    <link rel="preload" href="style.css" as="style">
+    <link rel="preload" href="assets.js" as="script">
+    <link rel="preload" href="game.js" as="script">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="screen active">
+        <div class="loading-container">
+            <div class="logo-animation">
+                <h1 class="main-title">CHROMATIC<br><span class="rush-text">RUSH</span></h1>
+                <div class="tagline">רוכב צעיר נגד התאגיד האפור</div>
+            </div>
+            <div class="loading-bar">
+                <div class="loading-progress"></div>
+            </div>
+            <div class="loading-text">טוען משאבים...</div>
+        </div>
+    </div>
+
+    <!-- Main Menu -->
+    <div id="mainMenu" class="screen">
+        <div class="menu-bg"></div>
+        <div class="menu-container">
+            <div class="title-section">
+                <h1 class="game-title">CHROMATIC<br><span class="rush-text">RUSH</span></h1>
+                <div class="subtitle">רוכב BMX ארקייד</div>
+                <div class="story-hint">"העיר אבדה לאפור, רק אתה יכול להחזיר את הצבעים"</div>
+            </div>
+            
+            <div class="menu-options">
+                <button id="startGame" class="menu-btn primary">
+                    <span class="btn-icon">🚴</span>
+                    התחל משחק
+                </button>
+                <button id="instructions" class="menu-btn">
+                    <span class="btn-icon">📖</span>
+                    הוראות
+                </button>
+                <button id="settings" class="menu-btn">
+                    <span class="btn-icon">⚙️</span>
+                    הגדרות
+                </button>
+                <button id="credits" class="menu-btn">
+                    <span class="btn-icon">👥</span>
+                    קרדיטים
+                </button>
+            </div>
+            
+            <div class="high-score">
+                ניקוד מירבי: <span id="highScoreDisplay">0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Instructions Screen -->
+    <div id="instructionsScreen" class="screen">
+        <div class="instructions-container">
+            <h2>איך לשחק</h2>
+            <div class="instruction-grid">
+                <div class="instruction-item">
+                    <div class="key-display">🏃</div>
+                    <div class="instruction-text">רץ קדימה אוטומטי</div>
+                </div>
+                <div class="instruction-item">
+                    <div class="key-display">↑ / W</div>
+                    <div class="instruction-text">קפיצה</div>
+                </div>
+                <div class="instruction-item">
+                    <div class="key-display">↓ / S</div>
+                    <div class="instruction-text">התכופפות / גלישה</div>
+                </div>
+                <div class="instruction-item">
+                    <div class="key-display">💨</div>
+                    <div class="instruction-text">הימנע ממכשולים</div>
+                </div>
+                <div class="instruction-item">
+                    <div class="key-display">🎨</div>
+                    <div class="instruction-text">אסוף צבעים לניקוד</div>
+                </div>
+                <div class="instruction-item">
+                    <div class="key-display">❤️</div>
+                    <div class="instruction-text">3 חיים - אל תיגע במכשולים!</div>
+                </div>
+            </div>
+            
+            <div class="story-section">
+                <h3>הסיפור</h3>
+                <p>העיר איבדה את כל הצבעים שלה בגלל התאגיד האפור. אתה רוכב BMX צעיר עם מטרה אחת - להחזיר את הצבעים לעיר דרך street art ואמנות גרפיטי. רוץ, קפוץ, התכופף והתחמק ממכשולי התאגיד תוך כדי איסוף צבעים וציור הקירות!</p>
+            </div>
+            
+            <button id="backToMenu" class="menu-btn">חזרה לתפריט</button>
+        </div>
+    </div>
+
+    <!-- Game Canvas -->
+    <div id="gameScreen" class="screen">
+        <div class="game-ui">
+            <!-- Top HUD -->
+            <div class="game-hud top">
+                <div class="score-container">
+                    <span class="label">ניקוד:</span>
+                    <span id="score">0</span>
+                </div>
+                <div class="lives-container">
+                    <span class="label">חיים:</span>
+                    <div id="lives">
+                        <span class="heart">❤️</span>
+                        <span class="heart">❤️</span>
+                        <span class="heart">❤️</span>
+                    </div>
+                </div>
+                <div class="multiplier-container">
+                    <span class="label">רב כפל:</span>
+                    <span id="multiplier">x1</span>
+                </div>
+            </div>
+            
+            <!-- Pause Button -->
+            <button id="pauseBtn" class="pause-btn">⏸️</button>
+        </div>
+        
+        <canvas id="gameCanvas"></canvas>
+        
+        <!-- Mobile Controls -->
+        <div class="mobile-controls">
+            <button id="jumpBtn" class="mobile-btn jump">קפיצה</button>
+            <button id="slideBtn" class="mobile-btn slide">גלישה</button>
+        </div>
+        
+        <!-- Effects Container -->
+        <div id="effectsContainer"></div>
+    </div>
+
+    <!-- Pause Screen -->
+    <div id="pauseScreen" class="screen overlay">
+        <div class="pause-container">
+            <h2>משחק מושהה</h2>
+            <div class="pause-buttons">
+                <button id="resumeGame" class="menu-btn primary">המשך משחק</button>
+                <button id="restartGame" class="menu-btn">התחל מחדש</button>
+                <button id="quitGame" class="menu-btn">יציאה לתפריט</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="gameOverScreen" class="screen overlay">
+        <div class="game-over-container">
+            <h2>משחק נגמר!</h2>
+            <div class="final-stats">
+                <div class="stat">
+                    <span class="stat-label">ניקוד סופי:</span>
+                    <span id="finalScore" class="stat-value">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">מרחק:</span>
+                    <span id="finalDistance" class="stat-value">0m</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">צבעים נאספו:</span>
+                    <span id="colorsCollected" class="stat-value">0</span>
+                </div>
+            </div>
+            
+            <div id="newHighScore" class="new-high-score hidden">
+                🎉 שיא חדש! 🎉
+            </div>
+            
+            <div class="game-over-buttons">
+                <button id="playAgain" class="menu-btn primary">שחק שוב</button>
+                <button id="backToMenuFromGameOver" class="menu-btn">חזרה לתפריט</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Screen -->
+    <div id="settingsScreen" class="screen">
+        <div class="settings-container">
+            <h2>הגדרות</h2>
+            <div class="settings-grid">
+                <div class="setting-item">
+                    <label for="soundToggle">צלילים:</label>
+                    <button id="soundToggle" class="toggle-btn active">ON</button>
+                </div>
+                <div class="setting-item">
+                    <label for="musicToggle">מוזיקה:</label>
+                    <button id="musicToggle" class="toggle-btn active">ON</button>
+                </div>
+                <div class="setting-item">
+                    <label for="qualitySelect">איכות גרפיקה:</label>
+                    <select id="qualitySelect">
+                        <option value="high">גבוהה</option>
+                        <option value="medium" selected>בינונית</option>
+                        <option value="low">נמוכה</option>
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <label for="controlsToggle">בקרות מגע:</label>
+                    <button id="controlsToggle" class="toggle-btn auto">AUTO</button>
+                </div>
+            </div>
+            <button id="backToMenuFromSettings" class="menu-btn">חזרה לתפריט</button>
+        </div>
+    </div>
+
+    <!-- Credits Screen -->
+    <div id="creditsScreen" class="screen">
+        <div class="credits-container">
+            <h2>קרדיטים</h2>
+            <div class="credits-content">
+                <div class="team-section">
+                    <h3>צוות הפיתוח</h3>
+                    <div class="team-member">
+                        <strong>מפתח ראשי:</strong> Claude AI Assistant
+                    </div>
+                    <div class="team-member">
+                        <strong>עיצוב משחק:</strong> צוות ה-ECS Architecture
+                    </div>
+                    <div class="team-member">
+                        <strong>אמנות ואנימציות:</strong> CSS3 & Canvas Masters
+                    </div>
+                    <div class="team-member">
+                        <strong>בדיקות איכות:</strong> 80+ Test Cases Team
+                    </div>
+                </div>
+                
+                <div class="tech-section">
+                    <h3>טכנולוגיות</h3>
+                    <ul>
+                        <li>HTML5 Canvas & WebGL</li>
+                        <li>JavaScript ES6+ & Web APIs</li>
+                        <li>CSS3 Animations & Effects</li>
+                        <li>Entity Component System</li>
+                        <li>Responsive & Mobile Support</li>
+                    </ul>
+                </div>
+                
+                <div class="special-thanks">
+                    <h3>תודות מיוחדות</h3>
+                    <p>לקהילת הרוכבים הצעירים שנלחמים כל יום נגד האפור של העולם 🎨🚴‍♂️</p>
+                </div>
+            </div>
+            <button id="backToMenuFromCredits" class="menu-btn">חזרה לתפריט</button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="assets.js"></script>
+    <script src="game.js"></script>
+    <script>
+        // Initialize game when everything is loaded
+        window.addEventListener('load', () => {
+            // Wait for assets to load, then start
+            setTimeout(() => {
+                if (window.ChromaticRush) {
+                    window.ChromaticRush.init();
+                    // Hide loading screen after 3 seconds
+                    setTimeout(() => {
+                        document.getElementById('loadingScreen').classList.remove('active');
+                        document.getElementById('mainMenu').classList.add('active');
+                    }, 3000);
+                } else {
+                    console.error('ChromaticRush not found, check game.js');
+                    // Fallback - show menu anyway
+                    setTimeout(() => {
+                        document.getElementById('loadingScreen').classList.remove('active');
+                        document.getElementById('mainMenu').classList.add('active');
+                    }, 2000);
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
