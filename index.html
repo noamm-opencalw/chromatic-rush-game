@@ -265,26 +265,60 @@
     <script src="assets.js"></script>
     <script src="game.js"></script>
     <script>
+        console.log('🎮 CHROMATIC RUSH - Starting initialization...');
+        
         // Initialize game when everything is loaded
         window.addEventListener('load', () => {
+            console.log('✅ Page loaded, starting game initialization...');
+            
+            // Check if all required files are loaded
+            const checkAssets = () => {
+                if (typeof window.ChromaticRush === 'undefined') {
+                    console.error('❌ ChromaticRush not found - game.js failed to load');
+                    return false;
+                }
+                console.log('✅ ChromaticRush found');
+                return true;
+            };
+            
             // Wait for assets to load, then start
             setTimeout(() => {
-                if (window.ChromaticRush) {
-                    window.ChromaticRush.init();
-                    // Hide loading screen after 3 seconds
+                try {
+                    if (checkAssets()) {
+                        console.log('🚀 Initializing game...');
+                        window.ChromaticRush.init();
+                        console.log('✅ Game initialized successfully');
+                        
+                        // Hide loading screen after 3 seconds
+                        setTimeout(() => {
+                            console.log('🎮 Switching to main menu...');
+                            document.getElementById('loadingScreen').classList.remove('active');
+                            document.getElementById('mainMenu').classList.add('active');
+                        }, 3000);
+                    } else {
+                        throw new Error('Game assets failed to load');
+                    }
+                } catch (error) {
+                    console.error('❌ Game initialization failed:', error);
+                    // Fallback - show menu anyway with error message
                     setTimeout(() => {
+                        console.log('🔄 Showing fallback menu...');
                         document.getElementById('loadingScreen').classList.remove('active');
                         document.getElementById('mainMenu').classList.add('active');
-                    }, 3000);
-                } else {
-                    console.error('ChromaticRush not found, check game.js');
-                    // Fallback - show menu anyway
-                    setTimeout(() => {
-                        document.getElementById('loadingScreen').classList.remove('active');
-                        document.getElementById('mainMenu').classList.add('active');
+                        
+                        // Show error in loading text
+                        const loadingText = document.querySelector('.loading-text');
+                        if (loadingText) {
+                            loadingText.textContent = 'שגיאה בטעינה - נסה לרענן הדף';
+                        }
                     }, 2000);
                 }
             }, 1000);
+        });
+        
+        // Debug information
+        window.addEventListener('error', (e) => {
+            console.error('🚨 JavaScript Error:', e.error?.message || e.message);
         });
     </script>
 </body>
