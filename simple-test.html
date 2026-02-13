@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CHROMATIC RUSH - TEST</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(45deg, #1a1a1a, #2d2d2d);
+            color: white;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        
+        #gameContainer {
+            text-align: center;
+            max-width: 800px;
+            width: 90%;
+        }
+        
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 2rem;
+            background: linear-gradient(45deg, #ff6b35, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        #gameCanvas {
+            border: 2px solid #00d4ff;
+            background: linear-gradient(180deg, #87CEEB 0%, #98FB98 50%, #8B4513 100%);
+            display: block;
+            margin: 0 auto;
+        }
+        
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        
+        button {
+            padding: 15px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            border: 2px solid #00d4ff;
+            background: rgba(0, 212, 255, 0.2);
+            color: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: #00d4ff;
+            color: black;
+            transform: scale(1.05);
+        }
+        
+        .info {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 10px;
+            border: 1px solid #333;
+        }
+        
+        .mobile-controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 30px;
+        }
+        
+        .control-btn {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: 3px solid white;
+            background: rgba(0, 212, 255, 0.3);
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            transition: all 0.2s;
+        }
+        
+        .control-btn:active {
+            transform: scale(0.9);
+            background: rgba(0, 212, 255, 0.6);
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <h1>CHROMATIC RUSH</h1>
+        <canvas id="gameCanvas" width="800" height="400"></canvas>
+        
+        <div class="controls">
+            <button onclick="startGame()">🚴 התחל משחק</button>
+            <button onclick="restartGame()">🔄 שחק שוב</button>
+        </div>
+        
+        <div class="info">
+            <p><strong>נקודות:</strong> <span id="score">0</span></p>
+            <p><strong>חיים:</strong> <span id="lives">3</span></p>
+            <p><strong>מהירות:</strong> <span id="speed">0</span></p>
+            <p><strong>סטטוס:</strong> <span id="status">מוכן למשחק</span></p>
+        </div>
+    </div>
+    
+    <!-- Mobile Controls -->
+    <div class="mobile-controls">
+        <div class="control-btn" ontouchstart="jump()" onclick="jump()">↑</div>
+        <div class="control-btn" ontouchstart="duck()" onclick="duck()">↓</div>
+    </div>
+
+    <script>
+        console.log('🎮 CHROMATIC RUSH Simple Test - Loading...');
+        
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Game state
+        let gameRunning = false;
+        let score = 0;
+        let lives = 3;
+        let speed = 0;
+        
+        // Player
+        const player = {
+            x: 100,
+            y: 300,
+            width: 40,
+            height: 40,
+            vy: 0,
+            grounded: true,
+            ducking: false
+        };
+        
+        // Game objects
+        let obstacles = [];
+        let collectibles = [];
+        
+        // Game functions
+        function updateUI() {
+            document.getElementById('score').textContent = Math.floor(score);
+            document.getElementById('lives').textContent = lives;
+            document.getElementById('speed').textContent = Math.floor(speed * 10);
+        }
+        
+        function setStatus(text) {
+            document.getElementById('status').textContent = text;
+            console.log('📋 Status:', text);
+        }
+        
+        function startGame() {
+            console.log('🚀 Starting game...');
+            gameRunning = true;
+            score = 0;
+            lives = 3;
+            speed = 2;
+            player.y = 300;
+            player.vy = 0;
+            player.grounded = true;
+            obstacles = [];
+            collectibles = [];
+            setStatus('המשחק פועל!');
+            gameLoop();
+        }
+        
+        function restartGame() {
+            console.log('🔄 Restarting game...');
+            gameRunning = false;
+            startGame();
+        }
+        
+        function jump() {
+            console.log('⬆️ Jump!');
+            if (player.grounded && gameRunning) {
+                player.vy = -12;
+                player.grounded = false;
+                setStatus('קפיצה!');
+            }
+        }
+        
+        function duck() {
+            console.log('⬇️ Duck!');
+            if (gameRunning) {
+                player.ducking = true;
+                player.height = 25;
+                setStatus('התכופפות!');
+                setTimeout(() => {
+                    player.ducking = false;
+                    player.height = 40;
+                }, 300);
+            }
+        }
+        
+        function gameLoop() {
+            if (!gameRunning) return;
+            
+            // Clear canvas
+            ctx.fillStyle = '#87CEEB';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Ground
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(0, 350, canvas.width, 50);
+            
+            // Player physics
+            if (!player.grounded) {
+                player.vy += 0.6; // gravity
+            }
+            player.y += player.vy;
+            
+            // Ground collision
+            if (player.y >= 300) {
+                player.y = 300;
+                player.vy = 0;
+                player.grounded = true;
+            }
+            
+            // Draw player
+            ctx.fillStyle = player.grounded ? '#00d4ff' : '#39ff14';
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+            
+            // Player eyes
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(player.x + 28, player.y + 8, 4, 4);
+            ctx.fillRect(player.x + 34, player.y + 8, 4, 4);
+            
+            // Spawn obstacles
+            if (Math.random() < 0.008) {
+                obstacles.push({
+                    x: canvas.width,
+                    y: 310,
+                    width: 30,
+                    height: 40
+                });
+            }
+            
+            // Spawn collectibles
+            if (Math.random() < 0.005) {
+                collectibles.push({
+                    x: canvas.width,
+                    y: 280,
+                    width: 20,
+                    height: 20,
+                    collected: false
+                });
+            }
+            
+            // Update obstacles
+            obstacles = obstacles.filter(obs => {
+                obs.x -= speed;
+                
+                // Draw obstacle
+                ctx.fillStyle = '#ff6b35';
+                ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+                
+                // Collision with player
+                if (obs.x < player.x + player.width &&
+                    obs.x + obs.width > player.x &&
+                    obs.y < player.y + player.height &&
+                    obs.y + obs.height > player.y) {
+                    lives--;
+                    setStatus('התנגשות! חיים: ' + lives);
+                    obs.x = -100; // Remove obstacle
+                    
+                    if (lives <= 0) {
+                        gameRunning = false;
+                        setStatus('משחק הסתיים! ניקוד: ' + Math.floor(score));
+                        console.log('💀 Game Over! Score:', Math.floor(score));
+                    }
+                }
+                
+                return obs.x > -50;
+            });
+            
+            // Update collectibles
+            collectibles = collectibles.filter(col => {
+                if (!col.collected) {
+                    col.x -= speed;
+                    
+                    // Draw collectible
+                    ctx.fillStyle = '#FFD700';
+                    ctx.beginPath();
+                    ctx.arc(col.x + col.width/2, col.y + col.height/2, col.width/2, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Collision with player
+                    if (col.x < player.x + player.width &&
+                        col.x + col.width > player.x &&
+                        col.y < player.y + player.height &&
+                        col.y + col.height > player.y) {
+                        col.collected = true;
+                        score += 10;
+                        setStatus('מטבע! +10 נקודות');
+                        return false;
+                    }
+                }
+                
+                return col.x > -50 && !col.collected;
+            });
+            
+            // Update score and speed
+            score += 0.1;
+            speed += 0.001;
+            
+            // Update UI
+            updateUI();
+            
+            // Continue game loop
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.code === 'ArrowUp') {
+                e.preventDefault();
+                jump();
+            }
+            if (e.code === 'ArrowDown') {
+                e.preventDefault();
+                duck();
+            }
+        });
+        
+        // Initialize
+        setStatus('מוכן למשחק - לחץ התחל משחק!');
+        console.log('✅ Game ready!');
+    </script>
+</body>
+</html>
